@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户登录 - MCP Web智能助手</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+    <!-- 引入CSS样式 -->
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>登录</h1>
+                <p>欢迎回到 MCP Web智能助手</p>
+            </div>
+            
+            <form id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label for="username">用户名或邮箱</label>
+                    <input type="text" id="username" name="username" required 
+                           placeholder="请输入用户名或邮箱地址">
+                    <span class="error-message" id="usernameError"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <div class="password-input">
+                        <input type="password" id="password" name="password" required 
+                               placeholder="请输入密码">
+                        <button type="button" class="password-toggle" id="passwordToggle">
+                            <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                    <span class="error-message" id="passwordError"></span>
+                </div>
+                
+                <div class="form-options">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="rememberMe">
+                        <span class="checkmark"></span>
+                        记住我
+                    </label>
+                    <a href="#" class="forgot-password">忘记密码？</a>
+                </div>
+                
+                <button type="submit" class="auth-button" id="loginButton">
+                    <span class="button-text">登录</span>
+                    <div class="loading-spinner" style="display: none;">
+                        <div class="spinner"></div>
+                    </div>
+                </button>
+                
+                <div class="form-footer">
+                    <p>还没有账户？ <a href="register.html" class="auth-link">立即注册</a></p>
+                </div>
+            </form>
+            
+            <!-- 错误提示 -->
+            <div id="errorAlert" class="alert alert-error" style="display: none;">
+                <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+                <span id="errorMessage"></span>
+            </div>
+            
+            <!-- 成功提示 -->
+            <div id="successAlert" class="alert alert-success" style="display: none;">
+                <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="9 11l3 3L22 4"></path>
+                </svg>
+                <span id="successMessage"></span>
+            </div>
+        </div>
+        
+        <!-- 背景装饰 -->
+        <div class="auth-background">
+            <div class="bg-shape shape-1"></div>
+            <div class="bg-shape shape-2"></div>
+            <div class="bg-shape shape-3"></div>
+        </div>
+    </div>
+    
+    <!-- 引入JavaScript -->
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        // 页面加载完成后初始化登录功能
+        document.addEventListener('DOMContentLoaded', function() {
+            initLogin();
+        });
+    </script>
+</body>
+</html>

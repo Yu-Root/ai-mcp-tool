@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP 智能助手</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <!-- Include marked.js for markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+    <!-- Include html2canvas for screenshots -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Left sidebar for history -->
+        <aside class="sidebar" id="historySidebar">
+            <div class="sidebar-header">
+                <span>对话历史</span>
+                <button id="toggleSidebarBtn" class="btn btn-secondary">隐藏</button>
+            </div>
+            <div class="sidebar-content" id="threadsList"></div>
+        </aside>
+
+        <!-- Top navigation bar -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="app-title">🧬 智能数据分析助手 </h1>
+                <div class="header-actions">
+                    <button id="openSidebarBtn" class="btn btn-secondary">历史记录</button>
+                    <div class="model-switcher">
+                        <button id="modelDropdownBtn" class="btn btn-secondary">模型：默认 ▾</button>
+                        <div id="modelDropdown" class="dropdown-menu" style="display:none"></div>
+                    </div>
+                    <button id="startNewChatBtn" class="btn btn-secondary">新建对话</button>
+                    <button id="shareChatBtn" class="btn btn-secondary">分享对话</button>
+
+                    <!-- 用户信息区域 -->
+                    <div class="user-info" id="userInfo" style="display: none;">
+                        <div class="user-avatar">
+                            <span id="userInitial">U</span>
+                        </div>
+                        <div class="user-dropdown">
+                            <button id="userDropdownBtn" class="btn btn-secondary">
+                                <span id="userName">用户</span> ▾
+                            </button>
+                            <div id="userDropdown" class="dropdown-menu" style="display:none">
+                                <a href="#" id="userProfileBtn">个人资料</a>
+                                <a href="#" id="userSettingsBtn">设置</a>
+                                <hr>
+                                <a href="#" id="logoutBtn">登出</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 登录按钮 -->
+                    <div class="auth-buttons" id="authButtons">
+                        <a href="login.html" class="btn btn-primary">登录</a>
+                        <a href="register.html" class="btn btn-secondary">注册</a>
+                    </div>
+
+                    <div class="status-indicator">
+                        <span id="connectionStatus" class="status-dot offline"></span>
+                        <span id="connectionText">离线</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main chat area -->
+        <main class="chat-container">
+            <!-- Chat messages area -->
+            <div class="chat-messages" id="chatMessages">
+                <div class="welcome-message">
+                    <div class="welcome-icon">🧪</div>
+                    <h2>欢迎使用智能数据分析助手</h2>
+                    <p>我是您的智能数据分析助手，基于先进的AI技术构建。我可以帮助您进行数据查询、分析和处理，支持自然语言交互，让复杂的数据操作变得简单直观。您可以选择不同的AI模型来获得最佳的分析效果。</p>
+                    <p>请输入您的问题或数据查询需求开始对话。</p>
+                </div>
+            </div>
+
+            <!-- Input area -->
+            <div class="chat-input-container">
+                <div class="chat-input-wrapper">
+                    <textarea 
+                        id="messageInput" 
+                        placeholder="请输入您的问题或数据查询需求..." 
+                        rows="1"
+                        maxlength="2000"
+                    ></textarea>
+                    <button id="sendBtn" class="send-btn" disabled>
+                        <span class="send-icon">📤</span>
+                    </button>
+                </div>
+                <div class="input-hint">
+                    按 Enter 发送，Shift + Enter 换行 | <span id="charCount">0</span>/2000
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">正在连接服务器...</div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/ws.js"></script>
+    <script src="js/chat/thinking-flow.js"></script>
+    <script src="js/chat/share-module.js"></script>
+    <script src="js/chat.js"></script>
+    <script>
+        // 页面加载完成后检查认证状态
+        document.addEventListener('DOMContentLoaded', async function() {
+            const user = await checkAuthStatus();
+            updateUIForAuthStatus(user);
+        });
+
+        // 更新UI以反映认证状态
+        function updateUIForAuthStatus(user) {
+            const userInfo = document.getElementById('userInfo');
+            const authButtons = document.getElementById('authButtons');
+            const userName = document.getElementById('userName');
+            const userInitial = document.getElementById('userInitial');
+
+            if (user) {
+                // 用户已登录
+                userInfo.style.display = 'flex';
+                authButtons.style.display = 'none';
+                userName.textContent = user.username;
+                userInitial.textContent = user.username.charAt(0).toUpperCase();
+            } else {
+                // 用户未登录
+                userInfo.style.display = 'none';
+                authButtons.style.display = 'flex';
+            }
+        }
+
+        // 用户下拉菜单事件
+        document.addEventListener('click', function(e) {
+            const userDropdownBtn = document.getElementById('userDropdownBtn');
+            const userDropdown = document.getElementById('userDropdown');
+            const logoutBtn = document.getElementById('logoutBtn');
+
+            if (e.target === userDropdownBtn || userDropdownBtn.contains(e.target)) {
+                e.preventDefault();
+                userDropdown.style.display = userDropdown.style.display === 'none' ? 'block' : 'none';
+            } else if (e.target === logoutBtn) {
+                e.preventDefault();
+                logout();
+            } else {
+                userDropdown.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
